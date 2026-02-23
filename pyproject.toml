@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "randomization-ci"
+version = "0.1.0"
+description = "Exact confidence intervals for randomized experiments with binary outcomes."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+  {name = "Peng Zhang"}
+]
+dependencies = [
+  "numpy>=1.24",
+  "scipy>=1.10"
+]
+
+[project.optional-dependencies]
+mosek = ["mosek>=10.0"]
+dev = ["pytest>=8.0"]
+
+[tool.setuptools]
+py-modules = [
+  "fft",
+  "compute_pmax",
+  "search_utils",
+  "randomization_test",
+  "RigdonHudgens",
+  "matching",
+  "test"
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
