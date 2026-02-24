@@ -7,7 +7,7 @@ Python code for randomization-based confidence intervals for randomized experime
 It also includes:
 - FFT-based probability engine (`fft.py`)
 - p-value maximization routine for balanced Bernoulli (`compute_pmax.py`)
-- Rigdon-Hudgens comparison implementation (a variante for balanced Bernoulli) (`RigdonHudgens.py`)
+- Rigdon-Hudgens comparison implementation (a variant for balanced Bernoulli) (`RigdonHudgens.py`)
 - Monte Carlo simulation scripts (`test.py`, `matching.py`)
 
 ## Installation
