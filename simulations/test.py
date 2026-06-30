@@ -1,38 +1,22 @@
-
-"""
-Compare our CI (constructed by "randomization_based_confidence_interval") for balanced Bernoulli design with Wald CI
-"""
+import time
 
 import numpy as np
-import time
 from scipy.stats import norm
+
+try:
+    from ._repo_path import add_repo_root
+except ImportError:
+    from _repo_path import add_repo_root
+
+add_repo_root(__file__)
+
 from randomization_test import randomization_based_confidence_interval
-
-def _validate_alpha(alpha: float) -> None:
-    if not (0.0 < alpha < 1.0):
-        raise ValueError(f"alpha must be in (0, 1), got {alpha}.")
-
-
-def _validate_seed(seed) -> None:
-    if seed is None:
-        return
-    if not isinstance(seed, (int, np.integer)):
-        raise ValueError(f"seed must be an integer or None, got {type(seed)}.")
-
-
-def _validate_counts4(x, name: str) -> np.ndarray:
-    arr = np.asarray(x)
-    if arr.shape != (4,):
-        raise ValueError(f"{name} must have shape (4,), got {arr.shape}.")
-    if not np.issubdtype(arr.dtype, np.integer):
-        if not np.all(np.equal(arr, np.rint(arr))):
-            raise ValueError(f"{name} entries must be integers.")
-        arr = np.rint(arr).astype(int)
-    else:
-        arr = arr.astype(int, copy=False)
-    if np.any(arr < 0):
-        raise ValueError(f"{name} entries must be nonnegative.")
-    return arr
+from simulation_helpers import (
+    observed_counts_from_treated_counts,
+    validate_alpha as _validate_alpha,
+    validate_counts4 as _validate_counts4,
+    validate_seed as _validate_seed,
+)
 
 
 def wald_ci_ht_counts(
@@ -97,7 +81,6 @@ def ci_test(
     x_all = rng.binomial(v, 0.5, size=(its, 4))
     n_obs_all = np.empty((its, 4), dtype=int)
 
-    v0, v1, v2, v3 = v.tolist()
     start = time.time()
     for i in range(its):
         # if i % 1000 == 0:
@@ -105,12 +88,7 @@ def ci_test(
         #     print(f"trial {i}, elapsed {elapsed:.2f}s")
 
         x = x_all[i]
-        n_obs = [
-            x[0] + x[1],
-            x[2] + x[3],
-            v0 + v2 - x[0] - x[2],
-            v1 + v3 - x[1] - x[3],
-        ]
+        n_obs = observed_counts_from_treated_counts(v, x)
         n_obs_all[i] = n_obs
 
         lo, hi = wald_ci_ht_counts(n_obs, alpha, zcrit=zcrit)
@@ -166,14 +144,15 @@ def ci_test(
 if __name__ == "__main__":
     # outcome count vector v = (v11, v10, v01, v00)
     v_list = [
-        # [25, 0, 0, 25],
-        # [50, 0, 0, 50],
+        [10, 0, 0, 10],
+        [25, 0, 0, 25],
+        [50, 0, 0, 50],
         # [100, 0, 0, 100],
         # [500, 0, 0, 500],
-        [4, 0, 0, 46],
-        [8, 0, 0, 92],
-        [16, 0, 0, 184],
-        [80, 0, 0, 920],
+        # [4, 0, 0, 46],
+        # [8, 0, 0, 92],
+        # [16, 0, 0, 184],
+        # [80, 0, 0, 920],
     ]
     for v in v_list:
         result = ci_test(v, alpha=0.05, its=10000)

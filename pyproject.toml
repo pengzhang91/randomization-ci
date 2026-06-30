@@ -26,12 +26,12 @@ py-modules = [
   "fft",
   "compute_pmax",
   "search_utils",
+  "simulation_helpers",
   "randomization_test",
   "RigdonHudgens",
-  "matching",
-  "test"
+  "general_bernoulli",
+  "matching"
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-

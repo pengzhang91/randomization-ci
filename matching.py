@@ -1,7 +1,3 @@
-"""
-Compare our CI for matched-pairs design with Wald CI
-"""
-
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, Tuple, Optional
@@ -212,7 +208,7 @@ def find_lexicographically_largest_m2_m1(
     # -------------------------
     # ILP(s) for M1: m1 >= 1
     # Step 1: max m2 s.t. v in V and m1 >= 1
-    # Step 2: fix (v_{1,-1}, v_{-1,1}) at the step-1 optimum, then max m1
+    # Step 2: fix v_{1,-1} + v_{-1,1} at the step-1 optimum, then max m1
     # -------------------------
     best_M1: Optional[LexiResult] = None
     try:
@@ -224,15 +220,13 @@ def find_lexicographically_largest_m2_m1(
             M1.objective("max_m2", ObjectiveSense.Maximize, Expr.sum(v1.pick(m2_inds)))
 
             vsol1 = _solve_model_and_get_v(M1, v1)
-            v1m1_star = vsol1[(1, -1)]
-            vm11_star = vsol1[(-1, 1)]
+            m2_star = vsol1[(1, -1)] + vsol1[(-1, 1)]
 
-        # Step 2 (new model): fix the two components achieving optimal m2, maximize m1
+        # Step 2 (new model): fix optimal m2, maximize m1
         with _build_base_model(N_w, rhs_ate)[0] as M2:
             v2 = M2.getVariable("v")
 
-            M2.constraint("fix_v_1_-1", v2.index(IDX[(1, -1)]), Domain.equalsTo(float(v1m1_star)))
-            M2.constraint("fix_v_-1_1", v2.index(IDX[(-1, 1)]), Domain.equalsTo(float(vm11_star)))
+            M2.constraint("fix_m2", Expr.sum(v2.pick(m2_inds)), Domain.equalsTo(float(m2_star)))
             # Optional: keep m1 >= 1 to stay in M1
             M2.constraint("m1_ge_1", Expr.sum(v2.pick(m1_inds)), Domain.greaterThan(1.0))
 
